@@ -1,2 +1,5 @@
 [
+    {  
+        "keys": ["ctrl+alt+l"], "command": "perl_subs"  
+    }  
 ]

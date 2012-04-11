@@ -5,13 +5,18 @@ This plugin helps you immediately know where in the Perl file you are
 
 If adds to the status line a small "[PerlSubs: <current>]" mark, so you know in which function you are now.
 
-Also, upon pressing ctrl+alt+l, (on OSX) it opens a list of functions, and clicking on one will jump to it.
+Also, upon pressing ctrl+alt+l, it opens a list of functions, and clicking on one will jump to it.
+
+INSTALLATION
+------------
+
+Drop it to your Sublime Text Plugin directory. on my computer (OSX) it is:
+~/Library/Application Support/Sublime Text 2/Packages/PerlSubs
+
 
 TODO
 ----
 
-1. Add packages to the list
-2. Add BEGIN/END blocks to the list
 
 BUGS
 ----
