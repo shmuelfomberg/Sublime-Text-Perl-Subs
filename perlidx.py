@@ -21,13 +21,14 @@ def IsPerl(view):
 def get_subs_list(view):
     if not IsPerl(view):
         return []
-    regions = view.find_all(r"\bsub\s+\w+\s*\{");
     subs = [];
-    for r in regions:
-        if view.syntax_name(r.begin()).find('storage.type.sub.perl') >= 0:
-            m = re.match(r"sub\s+(\w+)\s*\{", view.substr(r))
-            name = m.group(1)
-            subs.append([name, r.begin()])
+    for r in view.find_by_selector('storage.type.sub.perl'):
+        r2 = view.find(r"\bsub\s+[-a-zA-Z0-9_]+\s*(?:\([\$\@\*;]*\))?\s*\{", r.begin())
+        if r.begin() != r2.begin():
+            continue
+        m = re.match(r"^sub\s+([-a-zA-Z0-9_]+)\s*(?:\([\$\@\*;]*\))?\s*\{", view.substr(r2))
+        name = m.group(1)
+        subs.append([name, r.begin()])
     return subs
 
 class PerlIndexView(sublime_plugin.EventListener):
