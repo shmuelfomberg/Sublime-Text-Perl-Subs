@@ -1,7 +1,5 @@
 import sublime, sublime_plugin, re
 
-#print dir(sublime_plugin.EventListener.__dict__)
-
 views = {}
 
 def GetCurrentSub(view, subs):
@@ -14,7 +12,15 @@ def GetCurrentSub(view, subs):
             break
     return index
 
+def IsPerl(view):
+    if view.settings().get('syntax') == 'Packages/Perl/Perl.tmLanguage':
+        return 1
+    else:
+        return 0
+
 def get_subs_list(view):
+    if not IsPerl(view):
+        return []
     regions = view.find_all(r"\bsub\s+\w+\s*\{");
     subs = [];
     for r in regions:
@@ -23,7 +29,6 @@ def get_subs_list(view):
             name = m.group(1)
             subs.append([name, r.begin()])
     return subs
-
 
 class PerlIndexView(sublime_plugin.EventListener):
 
@@ -34,13 +39,14 @@ class PerlIndexView(sublime_plugin.EventListener):
     def on_close(self, view):
         if view.id() in views:
             del views[view.id()]
-    # def on_modified(self, view):
-    #   views[view.id()] = self.get_subs_list(view)
-    #   print 'Refreshing ', view.id()
+    def on_modified(self, view):
+        views[view.id()] = get_subs_list(view)
     def on_selection_modified(self, view):
         if not (view.id() in views):
             views[view.id()] = get_subs_list(view)
         subs = views[view.id()]
+        if len(subs) == 0:
+            return
         index = GetCurrentSub(view, subs)
         if index > -1:
             view.set_status('perlsubs', '[PerlSub: '+subs[index][0]+']')
@@ -64,7 +70,6 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
             views[view.id()] = get_subs_list(view)
         subs = views[view.id()]
         rec = subs[arg]
-        print "jumping to", rec[0], ", ", rec[1]
         view.show_at_center(rec[1])
         
 

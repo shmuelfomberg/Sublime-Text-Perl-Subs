@@ -1,0 +1,23 @@
+A Sublime-Text 2 Plugin - Perl functions listing
+------------------------------------------------
+
+This plugin helps you immediately know where in the Perl file you are
+
+If adds to the status line a small "[PerlSubs: <current>]" mark, so you know in which function you are now.
+
+Also, upon pressing ctrl+alt+l, (on OSX) it opens a list of functions, and clicking on one will jump to it.
+
+TODO
+----
+
+1. Add packages to the list
+2. Add BEGIN/END blocks to the list
+
+BUGS
+----
+
+1. If the marker is below a function, but not in other function, the plugin will think that you are inside that function.
+Not big deal, for me.
+
+License: Artistic 2
+Copyright: Shmuel Fomberg, 2012
