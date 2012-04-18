@@ -3,13 +3,33 @@ import sublime, sublime_plugin, re
 views = {}
 
 def GetCurrentSub(view, subs):
-    pos = view.sel()[0].begin()
+    pos = view.sel()[0].a
     index = -1
-    for r in subs:
-        if r[1] <= pos:
-            index = index + 1
+    if 'last' in views[view.id()]:
+        cache = views[view.id()]['last']
+        last_pos = cache['pos']
+        index = cache['index']
+        if pos == last_pos:
+            return index
+        if pos > last_pos:
+            for ix in range(index+1, len(subs)):
+                if subs[ix][1] <= pos:
+                    index = index + 1
+                else:
+                    break
         else:
-            break
+            for ix in reversed(range(0, index+1)):
+                if subs[ix][1] > pos:
+                    index = index - 1
+                else:
+                    break
+    else:
+        for r in subs:
+            if r[1] <= pos:
+                index = index + 1
+            else:
+                break
+    views[view.id()]['last'] = { 'index': index, 'pos': pos }
     return index
 
 def IsPerl(view):
@@ -31,24 +51,27 @@ def get_subs_list(view):
             name = re.sub(r'\W+$', '', name);
             package = name + '::'
             subs.append(['Package ' + name, r.begin(), package])
+    views[view.id()] = { 'subs': subs }
     return subs
 
 
 class PerlIndexView(sublime_plugin.EventListener):
 
     def on_new(self, view):
-        views[view.id()] = []
+        views[view.id()] = { 'subs' : []}
     def on_load(self, view):
-        views[view.id()] = get_subs_list(view)
+        get_subs_list(view)
     def on_close(self, view):
         if view.id() in views:
             del views[view.id()]
     def on_modified(self, view):
-        views[view.id()] = get_subs_list(view)
+        get_subs_list(view)
     def on_selection_modified(self, view):
+        subs = None
         if not (view.id() in views):
-            views[view.id()] = get_subs_list(view)
-        subs = views[view.id()]
+            subs = get_subs_list(view)
+        else:
+            subs = views[view.id()]['subs']
         if len(subs) == 0:
             return
         index = GetCurrentSub(view, subs)
@@ -60,9 +83,11 @@ class PerlIndexView(sublime_plugin.EventListener):
 class PerlSubsCommand(sublime_plugin.TextCommand):  
     def run(self, edit):
         view = self.view
+        subs = None;
         if not (view.id() in views):
-            views[view.id()] = get_subs_list(view)
-        subs = views[view.id()]
+            subs = get_subs_list(view)
+        else:
+            subs = views[view.id()]['subs']
         if len(subs) > 0:
             index = GetCurrentSub(view, subs)
             view.window().show_quick_panel([s[0] for s in subs], self.jumpto, 0, index)
@@ -70,9 +95,13 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
         if arg < 0:
             return
         view = self.view
+        subs = None
         if not (view.id() in views):
-            views[view.id()] = get_subs_list(view)
-        subs = views[view.id()]
+            subs = get_subs_list(view)
+        else:
+            subs = views[view.id()]['subs']
         rec = subs[arg]
         view.show_at_center(rec[1])
+        view.sel().clear()
+        view.sel().add(sublime.Region(rec[1], rec[1]))
         
