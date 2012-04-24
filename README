@@ -13,10 +13,15 @@ INSTALLATION
 Drop it to your Sublime Text Plugin directory. on my computer (OSX) it is:
 ~/Library/Application Support/Sublime Text 2/Packages/PerlSubs
 
-
 TODO
 ----
 
+Move the function name from the down-left corner to the down-right corner (where the important things are)
+
+In the list of functions, make the package names stand out
+
+Delayed scanning: do not scan the file immidiately on loading, nor on every change.
+scan it after the loading, and two seconds after the last change
 
 BUGS
 ----
