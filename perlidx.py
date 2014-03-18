@@ -33,7 +33,10 @@ def GetCurrentSub(view, subs):
     return index
 
 def IsPerl(view):
-    if view.settings().get('syntax') == 'Packages/Perl/Perl.tmLanguage':
+    syntax = view.settings().get('syntax')
+    if syntax == 'Packages/Perl/Perl.tmLanguage':
+        return 1
+    elif syntax == 'Packages/ModernPerl/ModernPerl.tmLanguage':
         return 1
     else:
         return 0
