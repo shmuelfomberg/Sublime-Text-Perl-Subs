@@ -1,4 +1,4 @@
-import sublime, sublime_plugin, re
+import sublime, sublime_plugin, re, time
 
 views = {}
 
@@ -54,21 +54,38 @@ def get_subs_list(view):
             name = re.sub(r'\W+$', '', name);
             package = name + '::'
             subs.append(['Package ' + name, r.begin(), package])
-    views[view.id()] = { 'subs': subs }
+    views[view.id()] = { 'subs': subs, 'last_scaned': time.time(), 'changed':0 }
     return subs
+
+
+def deferred_get_list(view, t):
+    if not (view.id() in views):
+        return
+    view_rec = views[view.id()]
+    changed = view_rec['changed']
+    if time.time() > view_rec['last_scaned'] + 10:
+        get_subs_list(view)
+    elif changed > t:
+        new_delay = changed + 2 - time.time()
+        func = lambda: deferred_get_list(view, changed)
+        sublime.set_timeout(func, new_delay)
+    else:
+        get_subs_list(view)
 
 
 class PerlIndexView(sublime_plugin.EventListener):
 
     def on_new(self, view):
-        views[view.id()] = { 'subs' : []}
+        views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
     def on_load(self, view):
         get_subs_list(view)
     def on_close(self, view):
         if view.id() in views:
             del views[view.id()]
     def on_modified(self, view):
-        get_subs_list(view)
+        t = time.time()
+        views[view.id()]['changed'] = t
+        sublime.set_timeout(lambda: deferred_get_list(view, t), 2000)
     def on_selection_modified(self, view):
         subs = None
         if not (view.id() in views):
