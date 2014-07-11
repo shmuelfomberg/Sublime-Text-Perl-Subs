@@ -30,7 +30,11 @@ def GetCurrentSub(view, subs):
             else:
                 break
     views[view.id()]['last'] = { 'index': index, 'pos': pos }
-    return index
+
+    if index > -1:
+        view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
+    else:
+        view.set_status('perlsubs', '[PerlSub: <none>]')
 
 def IsPerl(view):
     syntax = view.settings().get('syntax')
@@ -64,41 +68,42 @@ def deferred_get_list(view, t):
     view_rec = views[view.id()]
     changed = view_rec['changed']
     if time.time() > view_rec['last_scaned'] + 10:
-        get_subs_list(view)
+        subs = get_subs_list(view)
+        GetCurrentSub(view, subs)
     elif changed > t:
         new_delay = changed + 2 - time.time()
         func = lambda: deferred_get_list(view, changed)
         sublime.set_timeout(func, new_delay)
     else:
-        get_subs_list(view)
+        subs = get_subs_list(view)
+        GetCurrentSub(view, subs)
 
 
 class PerlIndexView(sublime_plugin.EventListener):
 
     def on_new(self, view):
+        print 'on_new: ', view.id()
         views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
     def on_load(self, view):
-        get_subs_list(view)
+        self.on_modified(view)
     def on_close(self, view):
         if view.id() in views:
             del views[view.id()]
     def on_modified(self, view):
         t = time.time()
+        if view.id() not in views:
+            views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
         views[view.id()]['changed'] = t
-        sublime.set_timeout(lambda: deferred_get_list(view, t), 2000)
+        func = lambda: deferred_get_list(view, t)
+        sublime.set_timeout(func, 2000)
     def on_selection_modified(self, view):
-        subs = None
         if not (view.id() in views):
-            subs = get_subs_list(view)
-        else:
-            subs = views[view.id()]['subs']
+            self.on_modified(view)
+            return
+        subs = views[view.id()]['subs']
         if len(subs) == 0:
             return
-        index = GetCurrentSub(view, subs)
-        if index > -1:
-            view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
-        else:
-            view.set_status('perlsubs', '[PerlSub: <none>]')
+        GetCurrentSub(view, subs)
 
 class PerlSubsCommand(sublime_plugin.TextCommand):  
     def run(self, edit):
