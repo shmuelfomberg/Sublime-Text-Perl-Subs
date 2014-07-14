@@ -67,13 +67,9 @@ def deferred_get_list(view, t):
         return
     view_rec = views[view.id()]
     changed = view_rec['changed']
-    if time.time() > view_rec['last_scaned'] + 10:
-        subs = get_subs_list(view)
-        GetCurrentSub(view, subs)
-    elif changed > t:
-        new_delay = changed + 2 - time.time()
-        func = lambda: deferred_get_list(view, changed)
-        sublime.set_timeout(func, new_delay)
+    last_scaned = view_rec['last_scaned']
+    if (t < last_scaned) or (changed > t):
+        return
     else:
         subs = get_subs_list(view)
         GetCurrentSub(view, subs)
