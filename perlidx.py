@@ -78,7 +78,6 @@ def deferred_get_list(view, t):
 class PerlIndexView(sublime_plugin.EventListener):
 
     def on_new(self, view):
-        print 'on_new: ', view.id()
         views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
     def on_load(self, view):
         self.on_modified(view)
