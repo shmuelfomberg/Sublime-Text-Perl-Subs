@@ -2,6 +2,14 @@ import sublime, sublime_plugin, re, time
 
 views = {}
 
+def DisplayCurrentSub(view, subs, index, pos):
+    views[view.id()]['last'] = { 'index': index, 'pos': pos }
+
+    if index > -1:
+        view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
+    else:
+        view.set_status('perlsubs', '[PerlSub: <none>]')
+
 def GetCurrentSub(view, subs):
     pos = view.sel()[0].a
     index = -1
@@ -29,12 +37,8 @@ def GetCurrentSub(view, subs):
                 index = index + 1
             else:
                 break
-    views[view.id()]['last'] = { 'index': index, 'pos': pos }
-
-    if index > -1:
-        view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
-    else:
-        view.set_status('perlsubs', '[PerlSub: <none>]')
+    
+    DisplayCurrentSub(view, subs, index, pos)
 
 def IsPerl(view):
     syntax = view.settings().get('syntax')
@@ -108,9 +112,12 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
             subs = get_subs_list(view)
         else:
             subs = views[view.id()]['subs']
-        if len(subs) > 0:
-            index = GetCurrentSub(view, subs)
-            view.window().show_quick_panel([s[0] for s in subs], self.jumpto, 0, index)
+        if len(subs) == 0:
+            return
+        if 'last' not in views[view.id()]:
+            GetCurrentSub(view, subs)
+        index = views[view.id()]['last']['index']
+        view.window().show_quick_panel([s[0] for s in subs], self.jumpto, 0, index)
     def jumpto(self, arg):
         if arg < 0:
             return
@@ -121,7 +128,10 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
         else:
             subs = views[view.id()]['subs']
         rec = subs[arg]
-        view.show_at_center(rec[1])
+        pos = rec[1]
+        view.show_at_center(pos)
         view.sel().clear()
-        view.sel().add(sublime.Region(rec[1], rec[1]))
+        view.sel().add(sublime.Region(pos, pos))
+        DisplayCurrentSub(view, subs, arg, pos)
+
         
