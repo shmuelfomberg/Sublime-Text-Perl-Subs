@@ -8,7 +8,8 @@ def DisplayCurrentSub(view, subs, index, pos):
     if index > -1:
         view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
     else:
-        view.set_status('perlsubs', '[PerlSub: <none>]')
+        if IsPerl(view):
+            view.set_status('perlsubs', '[PerlSub: <none>]')
 
 def GetCurrentSub(view, subs):
     pos = view.sel()[0].a
