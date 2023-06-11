@@ -47,7 +47,7 @@ def GetCurrentSub(view, subs):
                 index = index + 1
             else:
                 break
-    
+
     DisplayCurrentSub(view, subs, index, pos)
 
 
@@ -125,7 +125,7 @@ class PerlIndexView(sublime_plugin.EventListener):
         GetCurrentSub(view, subs)
 
 
-class PerlSubsCommand(sublime_plugin.TextCommand):  
+class PerlSubsCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         view = self.view
         subs = None
