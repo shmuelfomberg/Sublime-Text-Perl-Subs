@@ -1,15 +1,20 @@
-import sublime, sublime_plugin, re, time
+import sublime
+import sublime_plugin
+import re
+import time
 
 views = {}
 
+
 def DisplayCurrentSub(view, subs, index, pos):
-    views[view.id()]['last'] = { 'index': index, 'pos': pos }
+    views[view.id()]['last'] = {'index': index, 'pos': pos}
 
     if index > -1:
         view.set_status('perlsubs', '[PerlSub: '+subs[index][2]+']')
     else:
         if IsPerl(view):
             view.set_status('perlsubs', '[PerlSub: <none>]')
+
 
 def GetCurrentSub(view, subs):
     pos = view.sel()[0].a
@@ -41,6 +46,7 @@ def GetCurrentSub(view, subs):
     
     DisplayCurrentSub(view, subs, index, pos)
 
+
 def IsPerl(view):
     syntax = view.settings().get('syntax')
     if syntax == 'Packages/Perl/Perl.tmLanguage':
@@ -50,20 +56,21 @@ def IsPerl(view):
     else:
         return 0
 
+
 def get_subs_list(view):
     if not IsPerl(view):
         return []
-    subs = [];
-    package = '';
+    subs = []
+    package = ''
     for r in view.find_by_selector('entity.name.function.perl, entity.name.type.class.perl'):
         name = view.substr(r)
         if view.score_selector(r.begin(), 'entity.name.function.perl'):
             subs.append([name, r.begin(), package + name])
         else:
-            name = re.sub(r'\W+$', '', name);
+            name = re.sub(r'\W+$', '', name)
             package = name + '::'
             subs.append(['Package ' + name, r.begin(), package])
-    views[view.id()] = { 'subs': subs, 'last_scaned': time.time(), 'changed':0 }
+    views[view.id()] = {'subs': subs, 'last_scaned': time.time(), 'changed': 0}
     return subs
 
 
@@ -83,19 +90,25 @@ def deferred_get_list(view, t):
 class PerlIndexView(sublime_plugin.EventListener):
 
     def on_new(self, view):
-        views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
+        views[view.id()] = {'subs': [], 'last_scaned': 0, 'changed': 0}
+
     def on_load(self, view):
         self.on_modified(view)
+
     def on_close(self, view):
         if view.id() in views:
             del views[view.id()]
+
     def on_modified(self, view):
         t = time.time()
         if view.id() not in views:
-            views[view.id()] = { 'subs' : [], 'last_scaned' : 0, 'changed': 0 }
+            views[view.id()] = {'subs': [], 'last_scaned': 0, 'changed': 0}
         views[view.id()]['changed'] = t
-        func = lambda: deferred_get_list(view, t)
+
+        def func():
+            return deferred_get_list(view, t)
         sublime.set_timeout(func, 2000)
+
     def on_selection_modified(self, view):
         if not (view.id() in views):
             self.on_modified(view)
@@ -105,10 +118,11 @@ class PerlIndexView(sublime_plugin.EventListener):
             return
         GetCurrentSub(view, subs)
 
+
 class PerlSubsCommand(sublime_plugin.TextCommand):  
     def run(self, edit):
         view = self.view
-        subs = None;
+        subs = None
         if not (view.id() in views):
             subs = get_subs_list(view)
         else:
@@ -119,6 +133,7 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
             GetCurrentSub(view, subs)
         index = views[view.id()]['last']['index']
         view.window().show_quick_panel([s[0] for s in subs], self.jumpto, 0, index)
+
     def jumpto(self, arg):
         if arg < 0:
             return
