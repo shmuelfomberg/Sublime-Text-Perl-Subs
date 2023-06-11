@@ -6,7 +6,7 @@ If adds to the status line a small "[PerlSubs: <current>]" mark, so you know in 
 
 Also, upon pressing ctrl+alt+l, it opens a list of functions, and clicking on one will jump to it.
 
-## Intallation
+## Installation
 
 Drop it to your Sublime Text Plugin directory. on my computer (OSX) it is:
 ~/Library/Application Support/Sublime Text 2/Packages/PerlSubs

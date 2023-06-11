@@ -57,6 +57,8 @@ def IsPerl(view):
         return 1
     elif syntax == 'Packages/ModernPerl/ModernPerl.tmLanguage':
         return 1
+    elif syntax == 'Packages/Perl/Perl.sublime-syntax':
+        return 1
     else:
         return 0
 
@@ -153,5 +155,3 @@ class PerlSubsCommand(sublime_plugin.TextCommand):
         view.sel().clear()
         view.sel().add(sublime.Region(pos, pos))
         DisplayCurrentSub(view, subs, arg, pos)
-
-        
