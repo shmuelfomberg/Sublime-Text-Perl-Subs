@@ -18,7 +18,7 @@ def DisplayCurrentSub(view, subs, index, pos):
 
 def GetCurrentSub(view, subs):
     selection = view.sel()
-    if not selection:
+    if len(selection) == 0:
         pos = 0
     else:
         pos = selection[0].a
