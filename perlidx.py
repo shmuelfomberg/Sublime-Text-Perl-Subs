@@ -48,7 +48,7 @@ def IsPerl(view):
     elif syntax == 'Packages/ModernPerl/ModernPerl.tmLanguage':
         return 1
     elif syntax == 'Packages/Perl/Perl.sublime-syntax':
-        return 1        
+        return 1
     else:
         return 0
 
