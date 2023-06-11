@@ -12,7 +12,11 @@ def DisplayCurrentSub(view, subs, index, pos):
             view.set_status('perlsubs', '[PerlSub: <none>]')
 
 def GetCurrentSub(view, subs):
-    pos = view.sel()[0].a
+    selection = view.sel()
+    if not selection:
+        pos = 0
+    else:
+        pos = selection[0].a
     index = -1
     if 'last' in views[view.id()]:
         cache = views[view.id()]['last']
